@@ -58,7 +58,7 @@ namespace netzwelt_exam
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Account}/{action=Login}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 
 namespace netzwelt_exam.Models
 {
-    public class TerritoryViewModel
+    public class TerritoryDataViewModel
     {
-        public List<TerritoryDataViewModel> Territories { get; set; }
+        public string Parent { get; set; }
+
+        public IEnumerable<string> Children { get; set; }
     }
 }
