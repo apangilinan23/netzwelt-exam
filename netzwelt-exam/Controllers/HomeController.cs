@@ -1,37 +1,54 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using netzwelt_exam.Models;
-using System;
+using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace netzwelt_exam.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        public async Task<IActionResult> Index()
         {
-            _logger = logger;
-        }
+            var url = "https://netzwelt-devtest.azurewebsites.net/Territories/All";
+            using (var client = new HttpClient())
+            {
+                var response = await client.GetAsync(url);
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    if (result != null)
+                    {
+                        var resultModel = JsonConvert.DeserializeObject<TerritoryResponseModel>(result);
+                        FormatResults(resultModel);
+                    }
+                }
+            }
 
-        public IActionResult Index()
-        {
             return View();
         }
 
-        public IActionResult Privacy()
+        private List<TerritoryViewModel> FormatResults(TerritoryResponseModel data)
         {
-            return View();
-        }
+            var result = new List<TerritoryViewModel>();
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            foreach (var item in data.Territories)
+            {
+                var parentId = item.Id;
+
+                //get all places that are under parentId
+                var subPlaces = data.Territories.Where(x => x.Parent.HasValue && x.Parent.Value == parentId);
+                var subPlacesNames = subPlaces.Select(x => x.Name);
+                result.Add(new TerritoryViewModel
+                {
+                    Parent = item.Name,
+                    Children = subPlacesNames
+                });
+            }
+
+            return result;
         }
     }
 }
