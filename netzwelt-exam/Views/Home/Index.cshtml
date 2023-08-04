@@ -1,5 +1,9 @@
 ﻿@model TerritoryViewModel
 
+
+@{ 
+    var placesToSkip = new List<string>();
+}
 <div class="row">
     <div class="mx-auto col-lg-8">
         <div class="row">
@@ -11,22 +15,38 @@
         <div class="row">
             <div class="col-lg-12">
                 @{
-                    foreach (var groupedPlace in Model.Territories)
+                    foreach (var territory in Model.Territories)
                     {
+                        if (placesToSkip.Contains(territory.Parent))
+                        {
+                            continue;
+                        } 
                         <div class="panel-group">
                             <div class="panel panel-default">
                                 <div class="panel-heading">
                                     <h4 class="panel-title">
-                                        <a data-toggle="collapse" href="#header_@groupedPlace.Parent">@groupedPlace.Parent</a>
+                                        <a data-toggle="collapse" href="#header-@territory.Parent.Replace(' ','-')">@territory.Parent <text class="expand">↓</text> </a>
                                     </h4>
                                 </div>
-                                <div id="header_@groupedPlace.Parent" class="panel-collapse collapse show">
+                                <div id="header-@territory.Parent.Replace(' ','-')" class="panel-collapse collapse show">
                                     <ul class="list-group">
                                         @{
-                                            foreach (var child in groupedPlace.Children)
+                                            foreach (var child in territory.Children)
                                             {
                                                 <li class="list-group-item">
                                                     @child
+                                                    @if (Model.Territories.Select(x => x.Parent).Contains(child))
+                                                    {
+                                                        var childAsParent = Model.Territories.FirstOrDefault(x => x.Parent == child);
+                                                        placesToSkip.Add(child);
+                                                        <ul>
+                                                            @foreach (var subChild in childAsParent.Children)
+                                                            {
+                                                                <li class="list-group-item">@subChild</li>
+                                                                
+                                                            }
+                                                        </ul>
+                                                    }
                                                 </li>
                                             }
                                         }
@@ -42,3 +62,5 @@
         </div>
     </div>
 </div>
+
+

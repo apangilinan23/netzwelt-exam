@@ -24,7 +24,7 @@ namespace netzwelt_exam.Controllers
             var returnModel = new TerritoryViewModel();
             if (_netzweltSessionService.IsAuthenticated())
             {
-                var url = "https://netzwelt-devtest.azurewebsites.net/Territories/All";                
+                var url = "https://netzwelt-devtest.azurewebsites.net/Territories/All";
                 using (var client = new HttpClient())
                 {
                     var response = await client.GetAsync(url);
@@ -48,24 +48,21 @@ namespace netzwelt_exam.Controllers
 
         private List<TerritoryDataViewModel> GetGroupedResults(TerritoryResponseModel data)
         {
-            var result = new List<TerritoryDataViewModel>();
-
-            var groupedPlaces = data.Territories
-                .GroupBy(item => item.Parent.HasValue ? item.Parent.Value : -1)
-                .Where(item => item.Key > 0)
-                .Select(group => new { Parent = group.FirstOrDefault().Name, Places = group.Skip(1) })//skip 1 to avoid duplicating the parent
-                .ToList();
-
-            foreach (var groupedPlace in groupedPlaces)
+            var results = new List<TerritoryDataViewModel>();
+            foreach (var place in data.Territories)
             {
-                result.Add(new TerritoryDataViewModel
+                results.Add(new TerritoryDataViewModel
                 {
-                    Parent = groupedPlace.Parent,
-                    Children = groupedPlace.Places.Select(x => x.Name)
-                });                
+                    Parent = place.Name,
+                    Children = data.Territories.Where(x => x.Parent.HasValue && x.Parent.Value == place.Id).Select(x => x.Name)
+                });
             }
 
-            return result;
+            results.RemoveAll(x => !x.Children.Any());
+
+            return results;
         }
+
+
     }
 }
