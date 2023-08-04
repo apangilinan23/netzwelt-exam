@@ -13,21 +13,27 @@
                 @{
                     foreach (var groupedPlace in Model.Territories)
                     {
-                        <ul class="list-group">
-                            <li class="list-group-item">
-                                @groupedPlace.Parent
-                                <ul class="list-group">
-                                    @{
-                                        foreach (var child in groupedPlace.Children)
-                                        {
-                                            <li class="list-group-item">
-                                                @child
-                                            </li>
+                        <div class="panel-group">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" href="#header_@groupedPlace.Parent">@groupedPlace.Parent</a>
+                                    </h4>
+                                </div>
+                                <div id="header_@groupedPlace.Parent" class="panel-collapse collapse show">
+                                    <ul class="list-group">
+                                        @{
+                                            foreach (var child in groupedPlace.Children)
+                                            {
+                                                <li class="list-group-item">
+                                                    @child
+                                                </li>
+                                            }
                                         }
-                                    }
-                                </ul>
-                            </li>
-                        </ul>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     }
                 }
                 <ul>
