@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using netzwelt_exam.Models;
+using netzwelt_exam.Services;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,10 +13,18 @@ namespace netzwelt_exam.Controllers
 {
     public class AccountController : Controller
     {
+
+        private INetzweltSessionService _netzweltSessionService;
+
+        public AccountController(INetzweltSessionService netzweltSessionService)
+        {
+            _netzweltSessionService = netzweltSessionService;
+        }
+
         public IActionResult Login()
         {
             var model = new LoginViewModel();
-            if (IsUserAuthenticated())
+            if (_netzweltSessionService.IsAuthenticated())
             {
                 var session = new LoginSessionModel
                 {
@@ -27,7 +36,7 @@ namespace netzwelt_exam.Controllers
             else
             {
                 model.Session.IsAuthenticated = false;
-                model.Session.ErrorMessage = GetErrorMessage();
+                model.Session.ErrorMessage = _netzweltSessionService.GetErrorMessage();
             }
             return View(model);
         }
@@ -50,51 +59,23 @@ namespace netzwelt_exam.Controllers
                         model.Session.ErrorMessage = string.Empty;
 
                         //simulate db saving
-                        SaveToSession(model);
+                        _netzweltSessionService.SaveSessionData(model);
                     }
                 }
                 else
                 {
-                    var error = JsonConvert.DeserializeObject<ErrorViewModel>(result);
+                    var error = JsonConvert.DeserializeObject<ErrorResponseModel>(result);
                     model.Session.IsAuthenticated = false;
                     model.Session.ErrorMessage = error.Message;
 
                     //simulate db saving
-                    SaveToSession(model);
+                    _netzweltSessionService.SaveSessionData(model);
                 }
 
             }
             if (model.Session.IsAuthenticated)
                 return Redirect("/Home/Index");
             return RedirectToAction("Login");
-        }
-
-        private void SaveToSession(LoginViewModel model)
-        {
-            HttpContext.Session.Set("user-authenticated", BitConverter.GetBytes(model.Session.IsAuthenticated));
-            HttpContext.Session.Set("user-error-message", Encoding.ASCII.GetBytes(model.Session.ErrorMessage));
-        }
-
-        private bool IsUserAuthenticated()
-        {
-            bool result = false;
-            if (HttpContext.Session.TryGetValue("user-authenticated", out byte[] authByteArrayVal))
-            {
-                result = BitConverter.ToBoolean(authByteArrayVal);
-            }
-
-            return result;
-        }
-
-        private string GetErrorMessage()
-        {
-            string result = string.Empty;
-            if (HttpContext.Session.TryGetValue("user-error-message", out byte[] errorMessageByteArrayVal))
-            {
-                result = Encoding.ASCII.GetString(errorMessageByteArrayVal);
-            }
-
-            return result;
         }
     }
 }

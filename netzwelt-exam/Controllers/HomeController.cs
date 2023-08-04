@@ -1,22 +1,28 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using netzwelt_exam.Models;
+using netzwelt_exam.Services;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace netzwelt_exam.Controllers
 {
     public class HomeController : Controller
     {
+        private INetzweltSessionService _netzweltSessionService;
+
+        public HomeController(INetzweltSessionService netzweltSessionService)
+        {
+            _netzweltSessionService = netzweltSessionService;
+        }
+
         public async Task<IActionResult> Index()
         {
             TerritoryResponseModel parsedResponse = new TerritoryResponseModel();
             var returnModel = new TerritoryViewModel();
-            if (IsUserAuthenticated())
+            if (_netzweltSessionService.IsAuthenticated())
             {
                 var url = "https://netzwelt-devtest.azurewebsites.net/Territories/All";                
                 using (var client = new HttpClient())
@@ -57,28 +63,6 @@ namespace netzwelt_exam.Controllers
                     Parent = groupedPlace.Parent,
                     Children = groupedPlace.Places.Select(x => x.Name)
                 });                
-            }
-
-            return result;
-        }
-
-        private bool IsUserAuthenticated()
-        {
-            bool result = false;
-            if (HttpContext.Session.TryGetValue("user-authenticated", out byte[] authByteArrayVal))
-            {
-                result = BitConverter.ToBoolean(authByteArrayVal);
-            }
-
-            return result;
-        }
-
-        private string GetErrorMessage()
-        {
-            string result = string.Empty;
-            if (HttpContext.Session.TryGetValue("user-error-message", out byte[] errorMessageByteArrayVal))
-            {
-                result = Encoding.ASCII.GetString(errorMessageByteArrayVal);
             }
 
             return result;
