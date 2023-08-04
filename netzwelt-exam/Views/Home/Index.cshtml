@@ -21,25 +21,25 @@
                         {
                             continue;
                         } 
-                        <div class="panel-group">
+                        <div class="panel-group pb-2">
                             <div class="panel panel-default">
                                 <div class="panel-heading">
                                     <h4 class="panel-title">
-                                        <a data-toggle="collapse" href="#header-@territory.Parent.Replace(' ','-')">@territory.Parent <text class="expand">↓</text> </a>
+                                        <a data-toggle="collapse" href="#header-@territory.Parent.Replace(' ','-')">@territory.Parent</a>
                                     </h4>
                                 </div>
                                 <div id="header-@territory.Parent.Replace(' ','-')" class="panel-collapse collapse show">
                                     <ul class="list-group">
                                         @{
                                             foreach (var child in territory.Children)
-                                            {
+                                            {   
                                                 <li class="list-group-item">
                                                     @child
                                                     @if (Model.Territories.Select(x => x.Parent).Contains(child))
                                                     {
                                                         var childAsParent = Model.Territories.FirstOrDefault(x => x.Parent == child);
                                                         placesToSkip.Add(child);
-                                                        <ul>
+                                                        <ul class ="list-group list-group-flush">
                                                             @foreach (var subChild in childAsParent.Children)
                                                             {
                                                                 <li class="list-group-item">@subChild</li>
